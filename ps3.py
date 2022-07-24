@@ -10,13 +10,14 @@
 import math
 import random
 import string
+import copy
 
 VOWELS = 'aeiou'
 CONSONANTS = 'bcdfghjklmnpqrstvwxyz'
 HAND_SIZE = 7
 
 SCRABBLE_LETTER_VALUES = {
-    'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10
+    '*' : 0, 'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10
 }
 
 # -----------------------------------
@@ -195,33 +196,66 @@ def is_valid_word(word, hand, word_list):
             hand_temp.append(i)
 
     dupes = []
+    dupes_a, dupes_e, dupes_i, dupes_o, dupes_u = [], [], [], [], []
 
-    for i in word_temp:
-        for j in range(0,len(hand_temp)):
-            if i==hand_temp[j]:
-                dupes.append(i)
-                hand_temp.pop(j)
-                break
-            else:
-                pass
-   
-    if dupes!= word_temp:
-        return False
-    
-    judgement = False
-    if "*" not in word_lower:
-        if word_lower not in word_list:
+    if "*" not in hand_temp:
+        for i in word_temp:
+            for j in range(0,len(hand_temp)):
+                if i==hand_temp[j]:
+                    dupes.append(i)
+                    hand_temp.pop(j)
+                    break
+
+        if dupes!= word_temp:
             return False
-    else:
-        for i in VOWELS:
-            for j in range(0,len(word_lower)):
-                if word_lower[j] == "*":
-                    word_lower = word_lower[:j]+str(i)+word_lower[j+1:]
-                    if word_lower in word_list:
-                        judgement = True
 
-        return False
+
+    
+    else:
+        # print(hand_temp)
+        # print("c")
+        for i in word_temp:
+            for j in range(0,len(hand_temp)):
+
+                if i==hand_temp[j] and "*" != hand_temp[j]:
+                    dupes_a.append(i)
+                    dupes_e.append(i)
+                    dupes_i.append(i)
+                    dupes_o.append(i)
+                    dupes_u.append(i)
+                    hand_temp.pop(j)
+                    break
+                elif i == hand_temp[j] and "*" == hand_temp[j]:
+                    dupes_a.append("a")
+                    dupes_e.append("e")
+                    dupes_i.append("i")
+                    dupes_o.append("o")
+                    dupes_u.append("u")
+                    hand_temp.pop(j)
+                    # print(dupes_o)
+                    break
+        # print("a", dupes_a, "and, ", word.lower())
+        # print("e", dupes_e, "and, ", word_temp)
+        # print("i", dupes_i, "and, ", word_temp)
+        # print("o", dupes_o, "and, ", word_temp)
+        # print("u", dupes_u, "and, ", word_temp)
+        if list_to_string(dupes_a) in word_list or list_to_string(dupes_e) in word_list  \
+            or list_to_string(dupes_i) in word_list  or list_to_string(dupes_o) in word_list \
+                 or list_to_string(dupes_u) in word_list :
+            return True
+        else:
+            return False
+    # print(dupes_o)
+
     return True
+
+def list_to_string(list):
+    output = ""
+    for i in list:
+        output += i
+    return output
+    
+
 #
 # Problem #5: Playing a hand
 #
@@ -233,9 +267,29 @@ def calculate_handlen(hand):
     returns: integer
     """
     
-    pass  # TO DO... Remove this line when you implement this function
+    return len(hand)
 
 def play_hand(hand, word_list):
+
+    score = 0
+    while True:
+        print("Current Hand:", display_hand(hand))
+        player_input = input()
+        print("Enter word, or \"!!\" to indicate that you are finished: ,", player_input)
+        
+        if player_input == "!!":
+            break
+        else:
+            if is_valid_word(player_input, hand, word_list) == True:
+                score += get_word_score(player_input, len(hand))
+                print("Total score: ", score, " points")
+            else:
+                print("This is not a valid word. Please choose another word.")
+            hand = update_hand(hand, player_input)
+        if len(hand) == 1:
+            print("Ran out of letters. Total score: ", score, " points")
+            break
+
 
     """
     Allows the user to play the given hand, as follows:
